@@ -1,0 +1,12 @@
+---
+title: "Bulk RNA-seq analysis of prostate cancer hypoxia (LNCaP & PC3)"
+output: html_document
+---
+
+library(DESeq2)
+library(tidyverse)
+
+counts <- read.csv("data/counts/raw_counts.csv", row.names = 1)
+head(counts)
+
+undefined
