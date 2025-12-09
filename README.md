@@ -15,8 +15,6 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 ## 6. Reproducing the analysis
 ## 7. Interpretation and results
 
-### 7. Interpretation and results
-
 #### 7.1 Differential expression analysis (DESeq2)
 
 For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lines, I reused a DESeq2 R script from a hands‑on bulk RNA‑seq analysis course. This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
