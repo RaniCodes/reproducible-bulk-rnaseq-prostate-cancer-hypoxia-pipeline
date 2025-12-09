@@ -15,7 +15,9 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 ## 6. Reproducing the analysis
 ## 7. Interpretation and results
 
-#### Differential expression analysis (DESeq2)
+### 7. Interpretation and results
+
+#### 7.1 Differential expression analysis (DESeq2)
 
 For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lines, I reused a DESeq2 R script from a hands‑on bulk RNA‑seq analysis course. This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
 
@@ -27,7 +29,14 @@ In this project, the script `R/workshop_deseq_analysis.R`:
 - defines cell line (LNCaP vs PC3) and condition (Hypoxia vs Normoxia)
 - runs DESeq2 with the design `~ cell_line + condition`
 - writes ordered results to `data/results/deseq2_results_normoxia_vs_hypoxia.csv`
-- generates an MA‑plot of differential expression.
+- generates an MA‑plot of differential expression saved as `qc/MAplot_normoxia_vs_hypoxia.png`.
+
+#### 7.2 MA-plot
+
+The MA-plot shows log2 fold change (normoxia vs hypoxia) on the y-axis versus mean normalized counts on the x-axis, with many genes significantly differentially expressed across expression levels.
+
+![DESeq2 MA-plot](qc/MAplot_normoxia_vs_hypoxia.png)
+
 
 ## 8. Limitations and future work
 
