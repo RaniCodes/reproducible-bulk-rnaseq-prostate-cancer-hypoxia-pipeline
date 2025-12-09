@@ -14,11 +14,12 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 ## 5. Installation and environment
 ## 6. Reproducing the analysis
 ## 7. Interpretation and results
-### Differential expression analysis (DESeq2)
+
+#### Differential expression analysis (DESeq2)
 
 For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lines, I reused a DESeq2 R script from a hands‑on bulk RNA‑seq analysis course. This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
 
-Instead of generating my own count matrix from FASTQ files, I used the tutorial count matrix `raw_counts.csv` from this repository:
+Instead of generating my own count matrix from FASTQ files, I used the tutorial count matrix `raw_counts.csv` from this repository:  
 https://github.com/erilu/bulk-rnaseq-analysis/blob/7e02c51f8440126a5f674478e52b3273aa0770f2/raw_counts.csv
 
 In this project, the script `R/workshop_deseq_analysis.R`:
@@ -38,5 +39,6 @@ As a workaround, I used the tutorial count matrix (`raw_counts.csv`) instead of 
 - the DESeq2 analysis script in `R/workshop_deseq_analysis.R`
 
 In future, I plan to rerun the complete workflow (alignment + counting + differential expression) on a higher‑memory machine or in the cloud and compare the resulting differentially expressed genes with the tutorial‑based results.
+
 
 
