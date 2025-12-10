@@ -101,10 +101,6 @@ I performed read‑level QC on all FASTQ files:
 fastqc fastq/*.fastq.gz -o Fastqc_results/ --threads 8
 multiqc Fastqc_results/ -o multiqc_report/
 ```
-Aggregate all FastQC reports into a single HTML summary:
-```bash
-multiqc Fastqc_results/ -o multiqc_report/
-```
 This generates one interactive multiqc_report.html summarising quality metrics across all samples.
 
 In the MultiQC report, I examined per‑base quality, adapter content, overrepresented sequences, and duplication levels. Overall, the raw reads showed high quality and low adapter contamination.
@@ -122,12 +118,14 @@ I then ran FastQC again on `SRR7179504_trimmed.fastq.gz` and compared the metric
 ### 6.3 Alignment with HISAT2 and samtools (attempted)
 
 To map reads to the human genome, I used:
-```bash
+
 Download and unpack GRCh38 HISAT2 genome index
+```bash
 wget https://genome-idx.s3.amazonaws.com/hisat/grch38_genome.tar.gz
 tar -xvzf grch38_genome.tar.gz
 ```
-Install aligner and basic tools
+
+Install aligner and basic tools:
 ```bash
 sudo apt install hisat2
 sudo apt install samtools
@@ -159,11 +157,13 @@ Because full alignment did not complete on this 8 GB RAM laptop, I did not run t
 Due to the alignment and counting limitations described above, I used the tutorial count matrix `data/counts/raw_counts.csv` (from Erick Lu’s bulk RNA‑seq analysis repo) to perform differential expression analysis with DESeq2:
 
 From the repo root in R:
-```bash
+```
 setwd("path/to/reproducible-bulk-rnaseq-prostate-cancer-hypoxia-pipeline")
 ```
 Run DESeq2 analysis and generate MA, PCA, and volcano plots
+```
 source("R/workshop_deseq_analysis.R")
+```
 
 This script:
 
