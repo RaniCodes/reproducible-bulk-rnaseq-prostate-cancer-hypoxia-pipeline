@@ -95,7 +95,7 @@ All 20 `*.fastq.gz` files used for QC and downstream analysis are located in `fa
 
 For some biological samples, reads were split across multiple SRA runs. After converting all `.sra` files to `.fastq.gz`, I concatenated the technical replicates for each biological sample using `cat` so that each sample had a single FASTQ file:
 
-![Concatenating technical replicate FASTQ files](docs/images/concatenating.jpg)
+![Concatenating technical replicate FASTQ files](docs/images/concatenating.png)
 ```bash
 cd fastq
 
@@ -136,7 +136,7 @@ TRAILING:10 -phred33
 I then ran FastQC again on `SRR7179504_trimmed.fastq.gz` and compared the metrics (quality, adapter content, overrepresented sequences, etc) to the untrimmed read. Because the original reads already had good quality and low adapter content, I decided to proceed with the untrimmed reads for the main pipeline.
 
 ### 6.4 Alignment with HISAT2 and samtools (attempted)
-![Running HISAT2 alignment loop with nohup align.sh](docs/images/Running-HISAT2-alignment-loop-with-nohup-align.sh.jpg)
+![Running HISAT2 alignment loop with nohup align.sh](docs/images/Running-HISAT2-alignment-loop-with-nohup-align.sh.png)
 
 To map reads to the human genome, I used:
 
@@ -151,8 +151,8 @@ Install aligner and basic tools:
 sudo apt install hisat2
 sudo apt install samtools
 ```
-![Downloading the Homo sapiens GRCh38.115 GTF file](docs/images/downloading-the-GTF-file.jpg)
-![Downloading the HISAT2 GRCh38 genome index](docs/images/downloading-HITSAT2-Index.jpg)
+![Downloading the Homo sapiens GRCh38.115 GTF file](docs/images/downloading-the-GTF-file.png)
+![Downloading the HISAT2 GRCh38 genome index](docs/images/downloading-HITSAT2-Index.png)
 
 Run automated alignment loop for 8 LNCaP/PC3 hypoxia/normoxia samples: 
 ```bash
@@ -167,7 +167,7 @@ On my 8 GB RAM WSL setup, these alignment jobs started correctly (as seen in `al
 ### 6.5 Gene‑level counts with featureCounts (planned)
 
 The next planned step after successful alignment was to generate exon‑level gene counts with featureCounts:
-```
+```bash
 featureCounts -S 2 -a Homo_sapiens.GRCh38.114.gtf
 -o quants/featurecounts.txt sample.bam
 ```
@@ -196,6 +196,7 @@ This script:
 - Runs `DESeq()` with the design `~ cell_line + condition`.
 - Writes ordered results to `data/results/deseq2_results_normoxia_vs_hypoxia.csv`.
 - Saves the MA, PCA, and volcano plots in `qc/` for interpretation in section 7.
+
 ## 7. Interpretation and results
 #### 7.1 Differential expression analysis (DESeq2)
 
@@ -206,8 +207,8 @@ For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lin
 To run it from the project root in R/RStudio:
 ```
 setwd("path/to/reproducible-bulk-rnaseq-prostate-cancer-hypoxia-pipeline")
-```
 source("R/workshop_deseq_analysis.R")
+```
 
 This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
 
