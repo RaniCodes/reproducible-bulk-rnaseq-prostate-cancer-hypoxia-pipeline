@@ -29,15 +29,15 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 ## 3. Data and SRA IDs
 For this project I worked with the GSE106305 prostate cancer RNA‑seq dataset (LNCaP and PC3, hypoxia vs normoxia). I downloaded 20 SRA runs:
 
-- SRR7179504–SRR7179507  
-- SRR7179508–SRR7179511  
-- SRR7179520–SRR7179523  
-- SRR7179524–SRR7179527  
+- SRR7179504-SRR7179507  
+- SRR7179508-SRR7179511  
+- SRR7179520-SRR7179523  
+- SRR7179524-SRR7179527  
 - SRR7179536, SRR7179537, SRR7179540, SRR7179541  
 
 I automated downloads with SRA‑Toolkit using a Python script: `scripts/download_sra_fastq.py`.
 
-### 3.1 Background resources I studied
+### 3.1 Background resources I studied: 
 
 To understand bulk RNA‑seq design, analysis, and interpretation for this project, I read:
 
@@ -70,11 +70,122 @@ The original tutorial uses STAR for alignment, but for this project I chose HISA
 I downloaded the GRCh38 HISAT2 index and GTF successfully, but the combined HISAT2 + samtools sort + samtools index steps were still too memory‑intensive for my 8 GB RAM WSL setup. The alignment jobs started (as shown in `logs/alignment_log.txt`) but crashed before producing BAM files for all samples. Because alignment is a very RAM‑consuming step, I could not complete the full HISAT2 → BAM → featureCounts pipeline on this machine.
 
 ## 5. Installation and environment
+All analyses were performed on an 8 GB RAM Windows laptop using Ubuntu via WSL.
+
+- OS: Windows 10 with Ubuntu (WSL)
+- RAM: 8 GB
+- Environment: command line (bash) + RStudio
+- Key tools:
+  - SRA‑Toolkit (prefetch, fastq‑dump)
+  - FastQC, MultiQC
+  - Trimmomatic 0.39
+  - HISAT2, samtools
+  - featureCounts (planned)
+  - R / RStudio with DESeq2 and tidyverse
+
+I followed the bulk RNA‑seq tutorial by Erick Lu for overall structure and adapted it to a HISAT2‑based pipeline suitable for my hardware.
+
 ## 6. Reproducing the analysis
+This section summarises the end‑to‑end pipeline I implemented or planned on my Ubuntu (WSL) setup, and the main decisions at each step.
+
+### 6.1 From SRA to FASTQ in Ubuntu
+- I used SRA‑Toolkit with a Python loop (`scripts/download_sra_fastq.py`) to download all 20 SRA runs listed in section 3 using `prefetch`.
+- I then converted the `.sra` files to gzipped FASTQ files and stored them in a dedicated `fastq/` folder inside my Ubuntu (WSL) environment.
+
+All 20 `*.fastq.gz` files used for QC and downstream analysis are located in `fastq/`.
+### 6.2 QC, trimming test, and MultiQC
+
+I performed read‑level QC on all FASTQ files:
+
+```bash
+fastqc fastq/*.fastq.gz -o Fastqc_results/ --threads 8
+multiqc Fastqc_results/ -o multiqc_report/
+```
+Aggregate all FastQC reports into a single HTML summary:
+```bash
+multiqc Fastqc_results/ -o multiqc_report/
+```
+This generates one interactive multiqc_report.html summarising quality metrics across all samples.
+
+In the MultiQC report, I examined per‑base quality, adapter content, overrepresented sequences, and duplication levels. Overall, the raw reads showed high quality and low adapter contamination.
+
+To understand trimming, I installed Trimmomatic and ran it once on an example sample:
+
+```bash
+java -jar Trimmomatic-0.39/trimmomatic-0.39.jar SE -threads 4
+fastq/SRR7179504.fastq.gz fastq/SRR7179504_trimmed.fastq.gz
+TRAILING:10 -phred33
+```
+
+I then ran FastQC again on `SRR7179504_trimmed.fastq.gz` and compared the metrics (quality, adapter content, overrepresented sequences, etc) to the untrimmed read. Because the original reads already had good quality and low adapter content, I decided to proceed with the untrimmed reads for the main pipeline.
+
+### 6.3 Alignment with HISAT2 and samtools (attempted)
+
+To map reads to the human genome, I used:
+```bash
+Download and unpack GRCh38 HISAT2 genome index
+wget https://genome-idx.s3.amazonaws.com/hisat/grch38_genome.tar.gz
+tar -xvzf grch38_genome.tar.gz
+```
+Install aligner and basic tools
+```bash
+sudo apt install hisat2
+sudo apt install samtools
+```
+Run automated alignment loop for 8 LNCaP/PC3 hypoxia/normoxia samples: 
+```bash
+nohup ./scripts/align.sh > align_stdout.log 2>&1 &
+tail -n 20 logs/alignment_log.txt
+```
+
+The script `scripts/align.sh` loops over the 8 LNCaP/PC3 hypoxia/normoxia FASTQ files in `fastq/`, runs HISAT2 against the GRCh38 index, pipes the output to `samtools sort`, creates BAM files, and then indexes them with `samtools index`. Progress and timings are logged to `logs/alignment_log.txt`.
+
+On my 8 GB RAM WSL setup, these alignment jobs started correctly (as seen in `alignment_log.txt` for samples such as `LNCAP_Hypoxia_S1`), but they did not finish for all samples because the combined HISAT2 + `samtools sort` + indexing steps exceeded available memory. As a result, I could not obtain a complete set of BAM/BAI files for all 8 samples on this machine.
+
+### 6.4 Gene‑level counts with featureCounts (planned)
+
+The next planned step after successful alignment was to generate exon‑level gene counts with featureCounts:
+```bash
+featureCounts -S 2 -a Homo_sapiens.GRCh38.114.gtf
+-o quants/featurecounts.txt sample.bam
+```
+
+I prepared a shell script template to loop over all BAM files and run featureCounts for each one, writing per‑sample count tables into a `quants/` folder. This would produce individual count files for each aligned sample, which can then be merged into a single counts matrix with a small Python script.
+
+Because full alignment did not complete on this 8 GB RAM laptop, I did not run the featureCounts and merge steps to completion with my own BAM files.
+
+### 6.5 Differential expression with DESeq2 (using tutorial counts)
+
+Due to the alignment and counting limitations described above, I used the tutorial count matrix `data/counts/raw_counts.csv` (from Erick Lu’s bulk RNA‑seq analysis repo) to perform differential expression analysis with DESeq2:
+
+From the repo root in R:
+```bash
+setwd("path/to/reproducible-bulk-rnaseq-prostate-cancer-hypoxia-pipeline")
+```
+Run DESeq2 analysis and generate MA, PCA, and volcano plots
+source("R/workshop_deseq_analysis.R")
+
+This script:
+
+- Reads `data/counts/raw_counts.csv` (LNCaP and PC3 hypoxia/normoxia counts).
+- Constructs a `DESeqDataSet` with `cell_line` (LNCaP vs PC3) and `condition` (Hypoxia vs Normoxia).
+- Runs `DESeq()` with the design `~ cell_line + condition`.
+- Writes ordered results to `data/results/deseq2_results_normoxia_vs_hypoxia.csv`.
+- Saves the MA, PCA, and volcano plots in `qc/` for interpretation in section 7.
 ## 7. Interpretation and results
 #### 7.1 Differential expression analysis (DESeq2)
 
-For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lines, I reused a DESeq2 R script from a hands‑on bulk RNA‑seq analysis course. This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
+For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lines, I reused and adapted a DESeq2 R script from a hands‑on bulk RNA‑seq course. The script is saved in:
+
+- `R/workshop_deseq_analysis.R`
+
+To run it from the project root in R/RStudio:
+```bash
+setwd("path/to/reproducible-bulk-rnaseq-prostate-cancer-hypoxia-pipeline")
+```
+source("R/workshop_deseq_analysis.R")
+
+This script helped me understand how to set up the DESeq2 object, specify the design formula, and interpret differential expression results.
 
 Instead of generating my own count matrix from FASTQ files, I used the tutorial count matrix `raw_counts.csv` from this repository:  
 https://github.com/erilu/bulk-rnaseq-analysis/blob/7e02c51f8440126a5f674478e52b3273aa0770f2/raw_counts.csv
