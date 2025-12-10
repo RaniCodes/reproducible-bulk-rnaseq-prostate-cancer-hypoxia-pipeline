@@ -167,11 +167,11 @@ On my 8 GB RAM WSL setup, these alignment jobs started correctly (as seen in `al
 ### 6.5 Gene‑level counts with featureCounts (planned)
 
 The next planned step after successful alignment was to generate exon‑level gene counts with featureCounts:
+
 ```bash
 featureCounts -S 2 -a Homo_sapiens.GRCh38.114.gtf
 -o quants/featurecounts.txt sample.bam
 ```
-
 I prepared a shell script template to loop over all BAM files and run featureCounts for each one, writing per‑sample count tables into a `quants/` folder. This would produce individual count files for each aligned sample, which can then be merged into a single counts matrix with a small Python script.
 
 Because full alignment did not complete on this 8 GB RAM laptop, I did not run the featureCounts and merge steps to completion with my own BAM files.
