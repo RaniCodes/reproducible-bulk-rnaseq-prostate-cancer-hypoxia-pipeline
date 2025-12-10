@@ -1,40 +1,37 @@
----
-title: "DESeq2_tutorial_GSE106305"
-author: "Smriti Arora"
-date: "2025-08-16"
-output: html_document
----
----------------------------------------------------------------------------------------
-## Make sure the you are using latest version - R-4.5.1
-# Check working version by 
-version    #or
-R.version.string    #Download the latest version - https://cran.r-project.org/bin/windows/base/
----------------------------------------------------------------------------------------
+# DESeq2_tutorial_GSE106305
+# Original author: Smriti Arora
+# Modified for local use by Vaishnavi on 2025-12-10
+# - Skipped annotation-based filtering because local CSVs are missing
+# - Proceeded with unfiltered dds object
+
+# Make sure you are using latest version
+# Check working version by
+version        # or
+R.version.string
+#Download the latest version - https://cran.r-project.org/bin/windows/base/
+
 
 # Understand this chunk to install any package
 ```{r}
 getwd()
 #setwd("C:/Users/smriti/Desktop/demo/tutorial_GSE106305/")  # to have all results at this path
 
-install.packages("BiocManager")
-BiocManager::install(version = "devel")
-BiocManager::install("DESeq2")
-
-# install.packages("pak")   # in case nothing works
-# pak::pak("bioc::DESeq2")
-
-#Let's get started
+# install.packages("BiocManager")          # run once manually if needed
+# BiocManager::install(version = "devel")  # NOT needed, comment out
+# BiocManager::install("DESeq2")           # run once manually if needed
 library(DESeq2)
+
 ```
 
 
 ## preparing counts and metadata
-```{r setup, include=FALSE}
+#```{r setup, include=FALSE}
 #library("DESeq2")
 #library("tidyverse")
 
 library(dplyr)
 library(tibble)
+
 
 raw_counts <- read.csv("data/counts/raw_counts.csv",
                        header = TRUE, row.names = "ensembl_id",
@@ -73,16 +70,19 @@ print(zero_summary)
 
 
 ```{r}
-library(data.table)
-annotation_file <- "GRCh38annotation.csv"
-annotation <- fread(annotation_file, stringsAsFactors = FALSE)
-counts_gse <- read.csv("GSE106305_counts_matrix.csv",
+# NOTE: Annotation-based filtering chunk commented out on this machine
+# because local CSV files (GRCh38annotation.csv, GSE106305_counts_matrix.csv)
+# are missing; analysis continues from unfiltered dds object.
+#library(data.table)
+#annotation_file <- "GRCh38annotation.csv"
+#annotation <- fread(annotation_file, stringsAsFactors = FALSE)
+#counts_gse <- read.csv("GSE106305_counts_matrix.csv",
                      header = TRUE,
                      stringsAsFactors = FALSE)
 
-counts_gse$Geneid <- sub("\\..*$", "", counts_gse$Geneid)
-annotation$Geneid <- sub("\\..*$", "", annotation$Geneid)
-annotated_counts <- left_join(counts_gse, annotation, by = "Geneid") %>%
+#counts_gse$Geneid <- sub("\\..*$", "", counts_gse$Geneid)
+#annotation$Geneid <- sub("\\..*$", "", annotation$Geneid)
+#annotated_counts <- left_join(counts_gse, annotation, by = "Geneid") %>%
   select(Geneid, Genesymbol, Genebiotype, 
          LNCAP_Hypoxia_S1, LNCAP_Hypoxia_S2, LNCAP_Normoxia_S1, LNCAP_Normoxia_S2, 
          PC3_Hypoxia_S1, PC3_Hypoxia_S2, PC3_Normoxia_S1, PC3_Normoxia_S2)
@@ -90,35 +90,35 @@ annotated_counts <- left_join(counts_gse, annotation, by = "Geneid") %>%
 
 
 ```{r}
-biotypes_to_keep <- c("protein_coding", "IG_J_gene", "IG_V_gene", "IG_C_gene", "IG_D_gene", "TR_D_gene", "TR_C_gene", "TR_V_gene", "TR_J_gene")
+#biotypes_to_keep <- c("protein_coding", "IG_J_gene", "IG_V_gene", "IG_C_gene", "IG_D_gene", "TR_D_gene", "TR_C_gene", "TR_V_gene", "TR_J_gene")
 
-filtered_counts <- annotated_counts %>%
+#filtered_counts <- annotated_counts %>%
   filter(Genebiotype %in% biotypes_to_keep)
 
-filtered_counts$Geneid <- sub("\\..*$", "", filtered_counts$Geneid)
+#filtered_counts$Geneid <- sub("\\..*$", "", filtered_counts$Geneid)
 head(filtered_counts, n = 3)
 
-output_file <- "9biotype_count_matrix.csv"
-fwrite(filtered_counts, file = output_file, sep = ",", row.names = FALSE)
-zero_counts1 <- rowSums(filtered_counts[, 4:11] == 0)
-zero_summary2 <- table(zero_counts1)
-print(zero_summary2)
+#output_file <- "9biotype_count_matrix.csv"
+#fwrite(filtered_counts, file = output_file, sep = ",", row.names = FALSE)
+#zero_counts1 <- rowSums(filtered_counts[, 4:11] == 0)
+#zero_summary2 <- table(zero_counts1)
+#print(zero_summary2)
 
 ############## filtering 2 steps
-keep_genes <- zero_counts1 < 7
-filtered_counts_nozero <- filtered_counts[keep_genes, ]
-cat("Number of genes after filtering (zeros in <7 samples):", nrow(filtered_counts_nozero), "\n")
+#keep_genes <- zero_counts1 < 7
+#filtered_counts_nozero <- filtered_counts[keep_genes, ]
+#cat("Number of genes after filtering (zeros in <7 samples):", nrow(filtered_counts_nozero), "\n")
 
-new_zero_counts <- rowSums(filtered_counts_nozero[, 4:11] == 0)
-cat("New zero counts distribution:\n")
-print(table(new_zero_counts))
+#new_zero_counts <- rowSums(filtered_counts_nozero[, 4:11] == 0)
+#cat("New zero counts distribution:\n")
+#print(table(new_zero_counts))
 
-output_file <- "filtered_biotype_nozero_count_matrix.csv"
-fwrite(filtered_counts_nozero, file = output_file, sep = ",", row.names = FALSE)
+#output_file <- "filtered_biotype_nozero_count_matrix.csv"
+#fwrite(filtered_counts_nozero, file = output_file, sep = ",", row.names = FALSE)
 
-head(filtered_counts_nozero, n = 3)
+#head(filtered_counts_nozero, n = 3)
 
-dds_filtered <- dds[rownames(dds) %in% filtered_counts_nozero$Geneid, ]
+#dds_filtered <- dds[rownames(dds) %in% filtered_counts_nozero$Geneid, ]
 cat("Dimensions of filtered DESeqDataSet:", dim(dds_filtered), "\n")
 
 removed_genes <- filtered_counts[!keep_genes, ]
@@ -196,11 +196,10 @@ dev.off()
 
 
 ```{r}
-dds <- DESeq(dds_filtered)
+dds <- DESeq(dds)
 dds
-normalized_counts <- counts(dds, normalized = T)
-normalized_counts_df <- as.data.frame(normalized_counts)
-write.csv(normalized_counts_df, file = "normalized_counts.csv", row.names = TRUE)
+normalized_counts <- counts(dds, normalized = TRUE)
+
 ```
 
 
@@ -619,4 +618,52 @@ waterfall_plot <- function (fsgea_results, graph_title) {
 library(stringr)
 waterfall_plot(fgsea_results, "Hallmark pathways altered by hypoxia in LNCaP cells")
 ```
+# PCA plot of all samples (QC)
+# PCA plot of all samples (QC)
+vsd <- vst(dds, blind = TRUE)
+
+pcaData <- plotPCA(vsd, intgroup = c("condition"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+library(ggplot2)
+
+png("qc/PCA_normoxia_vs_hypoxia.png", width = 1200, height = 1000, res = 150)
+ggplot(pcaData, aes(PC1, PC2, color = condition, label = name)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -0.8, size = 3) +
+  labs(
+    title = "PCA plot colored by condition",
+    x = paste0("PC1: ", percentVar[1], "% variance"),
+    y = paste0("PC2: ", percentVar[2], "% variance")
+  ) +
+  theme_minimal()
+dev.off()
+
+# Volcano plot for LNCaP hypoxia vs normoxia
+library(dplyr)
+
+res_df <- as.data.frame(res_lncap) |>
+  dplyr::filter(!is.na(padj)) |>
+  dplyr::mutate(regulation = dplyr::case_when(
+    padj < 0.05 & log2FoldChange > 1  ~ "Upregulated",
+    padj < 0.05 & log2FoldChange < -1 ~ "Downregulated",
+    TRUE                               ~ "Not significant"
+  ))
+
+png("qc/volcano_lncap_hypoxia_vs_normoxia.png", width = 1200, height = 1000, res = 150)
+ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj), color = regulation)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c(
+    "Upregulated" = "#FEA405",
+    "Downregulated" = "purple",
+    "Not significant" = "grey70"
+  )) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  labs(
+    title = "Volcano plot: LNCaP hypoxia vs normoxia",
+    x = "log2 fold change (hypoxia vs normoxia)",
+    y = "-log10 adjusted p-value"
+  ) +
+  theme_minimal()
+dev.off()
 
