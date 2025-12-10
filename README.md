@@ -1,8 +1,20 @@
 # Reproducible bulk RNA‑seq pipeline for prostate cancer hypoxia
+December 10, 2025
 
 End‑to‑end workflow for LNCaP and PC3 cell lines (hypoxia vs normoxia):
 FASTQ QC → HISAT2 alignment → featureCounts → DESeq2, with documented
 installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
+
+
+- [1. Project overview](#1-project-overview)
+- [2. Experimental design](#2-experimental-design)
+- [3. Data and SRA IDs](#3-data-and-sra-ids)
+- [4. Pipeline steps](#4-pipeline-steps)
+- [5. Installation and environment](#5-installation-and-environment)
+- [6. Reproducing the analysis](#6-reproducing-the-analysis)
+- [7. Interpretation and results](#7-interpretation-and-results)
+- [8. Limitations and future work](#8-limitations-and-future-work)
+
 
 ## 1. Project overview
 - Hypoxia is known to reprogram gene expression in prostate cancer cells and can influence tumor growth, metastasis, and treatment response.​
