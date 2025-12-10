@@ -11,6 +11,26 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 ## 2. Experimental design
 ## 3. Data and SRA IDs
 ## 4. Pipeline steps
+
+At a high level, this pipeline is designed to go from raw FASTQ files to differential expression:
+
+- Download SRA FASTQ files
+- Run FastQC and MultiQC
+- Align reads to GRCh38 with HISAT2
+- Count reads per gene with featureCounts
+- Run DESeq2 for hypoxia vs normoxia
+#### Why I selected HISAT2 instead of STAR
+
+The original tutorial uses STAR for alignment, but for this project I chose HISAT2 because:
+
+- HISAT2 has lower memory requirements than STAR, which is important on my 8 GB RAM laptop.
+- HISAT2 is a splice‑aware aligner that is widely used for RNA‑seq and gives good quality alignments suitable for featureCounts and DESeq2.
+- STAR is very fast but keeps large genome indices in memory, so it is harder to run reliably in a constrained WSL environment.
+
+#### Why HISAT2 still did not complete on my laptop
+
+I downloaded the GRCh38 HISAT2 index and GTF successfully, but the combined HISAT2 + samtools sort + samtools index steps were still too memory‑intensive for my 8 GB RAM WSL setup. The alignment jobs started (as shown in `logs/alignment_log.txt`) but crashed before producing BAM files for all samples. Because alignment is a very RAM‑consuming step, I could not complete the full HISAT2 → BAM → featureCounts pipeline on this machine.
+
 ## 5. Installation and environment
 ## 6. Reproducing the analysis
 ## 7. Interpretation and results
