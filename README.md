@@ -136,7 +136,7 @@ TRAILING:10 -phred33
 I then ran FastQC again on `SRR7179504_trimmed.fastq.gz` and compared the metrics (quality, adapter content, overrepresented sequences, etc) to the untrimmed read. Because the original reads already had good quality and low adapter content, I decided to proceed with the untrimmed reads for the main pipeline.
 
 ### 6.4 Alignment with HISAT2 and samtools (attempted)
-![Running HISAT2 alignment loop with nohup align.sh](docs/images/Running-HISAT2-alignment-loop-with-nohup-align.sh.png)
+![Running HISAT2 alignment loop with nohup align.sh](docs/images/Running-HISAT2-alignment-loop-with-nohup(align.sh).png)
 
 To map reads to the human genome, I used:
 
@@ -151,7 +151,7 @@ Install aligner and basic tools:
 sudo apt install hisat2
 sudo apt install samtools
 ```
-![Downloading the Homo sapiens GRCh38.115 GTF file](docs/images/downloading-the-GTF-file.png)
+![Downloading the Homo sapiens GRCh38.115 GTF file](docs/images/downloaded-GTF-files-and-stored-in-gr38-folder.png)
 ![Downloading the HISAT2 GRCh38 genome index](docs/images/downloading-HITSAT2-Index.png)
 
 Run automated alignment loop for 8 LNCaP/PC3 hypoxia/normoxia samples: 
