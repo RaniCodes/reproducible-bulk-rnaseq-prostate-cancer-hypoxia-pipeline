@@ -8,6 +8,11 @@ installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 > implemented; documentation and examples are being expanded.
 
 ## 1. Project overview
+- Hypoxia is known to reprogram gene expression in prostate cancer cells and can influence tumor growth, metastasis, and treatment response.​
+
+- This project uses bulk RNA‑seq data from LNCaP and PC3 prostate cancer cell lines to identify genes and pathways that differ between hypoxia and normoxia conditions.​
+
+- The aim is to build a reproducible end‑to‑end analysis (QC → alignment/counts → DESeq2) and summarize the main transcriptional changes associated with hypoxia in these models.
 ## 2. Experimental design
 ## 3. Data and SRA IDs
 ## 4. Pipeline steps
@@ -52,6 +57,9 @@ In this project, the script `R/workshop_deseq_analysis.R`:
 #### 7.2 MA-plot
 
 The MA-plot shows log2 fold change (normoxia vs hypoxia) on the y-axis versus mean normalized counts on the x-axis, with many genes significantly differentially expressed across expression levels.
+
+- In this plot, genes highlighted in blue are those with an adjusted p‑value (padj) < 0.05 in the DESeq2 results, so they represent statistically significant hypoxia‑associated changes.​
+- Most of these significant genes appear at moderate to high mean normalized counts, where DESeq2 has greater statistical power, while very lowly expressed genes are shrunk toward a log2 fold change of 0.
 
 ![DESeq2 MA-plot](qc/MAplot_normoxia_vs_hypoxia.png)
 
