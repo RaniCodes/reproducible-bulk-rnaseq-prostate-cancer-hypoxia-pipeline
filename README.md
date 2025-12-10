@@ -177,16 +177,20 @@ The script `scripts/align.sh` loops over the 8 LNCaP/PC3 hypoxia/normoxia FASTQ 
 On my 8 GB RAM WSL setup, these alignment jobs started correctly (as seen in `alignment_log.txt` for samples such as `LNCAP_Hypoxia_S1`), but they did not finish for all samples because the combined HISAT2 + `samtools sort` + indexing steps exceeded available memory. As a result, I could not obtain a complete set of BAM/BAI files for all 8 samples on this machine.
 
 ### 6.5 Gene‑level counts with featureCounts (planned)
-
-The next planned step after successful alignment was to generate exon‑level gene counts with featureCounts:
+After successful alignment, the next step would be to generate exon‑level gene counts per sample with featureCounts:
 
 ```bash
 featureCounts -S 2 -a Homo_sapiens.GRCh38.114.gtf
 -o quants/featurecounts.txt sample.bam
 ```
-I prepared a shell script template to loop over all BAM files and run featureCounts for each one, writing per‑sample count tables into a `quants/` folder. This would produce individual count files for each aligned sample, which can then be merged into a single counts matrix with a small Python script.
 
-Because full alignment did not complete on this 8 GB RAM laptop, I did not run the featureCounts and merge steps to completion with my own BAM files.
+I saved two helper scripts (adapted from the workshop materials) for a higher‑memory environment:
+
+- `scripts/featurecounts_all_samples.sh` – loops over all BAM files, runs featureCounts, and logs runtimes.
+- `scripts/merge_featurecounts_to_matrix.py` – reads all per‑sample featureCounts outputs and merges them into a single counts matrix CSV.
+
+Because alignment never fully completed on my 8 GB laptop, I did **not** run these scripts in this project; they are included for completeness and future use.
+
 
 ### 6.6 Differential expression with DESeq2 (using tutorial counts)
 
