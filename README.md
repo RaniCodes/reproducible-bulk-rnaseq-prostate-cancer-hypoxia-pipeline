@@ -4,9 +4,6 @@ End‑to‑end workflow for LNCaP and PC3 cell lines (hypoxia vs normoxia):
 FASTQ QC → HISAT2 alignment → featureCounts → DESeq2, with documented
 installation, decisions, and troubleshooting on an 8‑GB RAM laptop.
 
-> Status: This repository is under active development. The core workflow is
-> implemented; documentation and examples are being expanded.
-
 ## 1. Project overview
 - Hypoxia is known to reprogram gene expression in prostate cancer cells and can influence tumor growth, metastasis, and treatment response.​
 
@@ -93,7 +90,30 @@ This section summarises the end‑to‑end pipeline I implemented or planned on 
 - I then converted the `.sra` files to gzipped FASTQ files and stored them in a dedicated `fastq/` folder inside my Ubuntu (WSL) environment.
 
 All 20 `*.fastq.gz` files used for QC and downstream analysis are located in `fastq/`.
-### 6.2 QC, trimming test, and MultiQC
+
+### 6.2 Concatenating technical replicates
+
+For some biological samples, reads were split across multiple SRA runs. After converting all `.sra` files to `.fastq.gz`, I concatenated the technical replicates for each biological sample using `cat` so that each sample had a single FASTQ file:
+
+![Concatenating technical replicate FASTQ files](docs/images/concatenating.jpg)
+```bash
+cd fastq
+
+# LNCaP Normoxia S1 and S2
+cat SRR7179504_pass.fastq.gz SRR7179505_pass.fastq.gz SRR7179506_pass.fastq.gz SRR7179507_pass.fastq.gz > LNCAP_Normoxia_S1.fastq.gz
+cat SRR7179508_pass.fastq.gz SRR7179509_pass.fastq.gz SRR7179510_pass.fastq.gz SRR7179511_pass.fastq.gz > LNCAP_Normoxia_S2.fastq.gz
+
+# LNCaP Hypoxia S1 and S2
+cat SRR7179520_pass.fastq.gz SRR7179521_pass.fastq.gz SRR7179522_pass.fastq.gz SRR7179523_pass.fastq.gz > LNCAP_Hypoxia_S1.fastq.gz
+cat SRR7179524_pass.fastq.gz SRR7179525_pass.fastq.gz SRR7179526_pass.fastq.gz SRR7179527_pass.fastq.gz > LNCAP_Hypoxia_S2.fastq.gz
+
+# PC3 Normoxia S1 (example)
+mv SRR7179536_pass.fastq.gz PC3_Normoxia_S1.fastq.gz
+```
+
+These combined FASTQ files were then used for QC, alignment, and downstream analysis.
+
+### 6.3 QC, trimming test, and MultiQC
 
 I performed read‑level QC on all FASTQ files:
 
@@ -115,7 +135,8 @@ TRAILING:10 -phred33
 
 I then ran FastQC again on `SRR7179504_trimmed.fastq.gz` and compared the metrics (quality, adapter content, overrepresented sequences, etc) to the untrimmed read. Because the original reads already had good quality and low adapter content, I decided to proceed with the untrimmed reads for the main pipeline.
 
-### 6.3 Alignment with HISAT2 and samtools (attempted)
+### 6.4 Alignment with HISAT2 and samtools (attempted)
+![Running HISAT2 alignment loop with nohup align.sh](docs/images/Running-HISAT2-alignment-loop-with-nohup-align.sh.jpg)
 
 To map reads to the human genome, I used:
 
@@ -130,6 +151,9 @@ Install aligner and basic tools:
 sudo apt install hisat2
 sudo apt install samtools
 ```
+![Downloading the Homo sapiens GRCh38.115 GTF file](docs/images/downloading-the-GTF-file.jpg)
+![Downloading the HISAT2 GRCh38 genome index](docs/images/downloading-HITSAT2-Index.jpg)
+
 Run automated alignment loop for 8 LNCaP/PC3 hypoxia/normoxia samples: 
 ```bash
 nohup ./scripts/align.sh > align_stdout.log 2>&1 &
@@ -140,10 +164,10 @@ The script `scripts/align.sh` loops over the 8 LNCaP/PC3 hypoxia/normoxia FASTQ 
 
 On my 8 GB RAM WSL setup, these alignment jobs started correctly (as seen in `alignment_log.txt` for samples such as `LNCAP_Hypoxia_S1`), but they did not finish for all samples because the combined HISAT2 + `samtools sort` + indexing steps exceeded available memory. As a result, I could not obtain a complete set of BAM/BAI files for all 8 samples on this machine.
 
-### 6.4 Gene‑level counts with featureCounts (planned)
+### 6.5 Gene‑level counts with featureCounts (planned)
 
 The next planned step after successful alignment was to generate exon‑level gene counts with featureCounts:
-```bash
+```
 featureCounts -S 2 -a Homo_sapiens.GRCh38.114.gtf
 -o quants/featurecounts.txt sample.bam
 ```
@@ -152,7 +176,7 @@ I prepared a shell script template to loop over all BAM files and run featureCou
 
 Because full alignment did not complete on this 8 GB RAM laptop, I did not run the featureCounts and merge steps to completion with my own BAM files.
 
-### 6.5 Differential expression with DESeq2 (using tutorial counts)
+### 6.6 Differential expression with DESeq2 (using tutorial counts)
 
 Due to the alignment and counting limitations described above, I used the tutorial count matrix `data/counts/raw_counts.csv` (from Erick Lu’s bulk RNA‑seq analysis repo) to perform differential expression analysis with DESeq2:
 
@@ -180,7 +204,7 @@ For the hypoxia vs normoxia comparison in LNCaP and PC3 prostate cancer cell lin
 - `R/workshop_deseq_analysis.R`
 
 To run it from the project root in R/RStudio:
-```bash
+```
 setwd("path/to/reproducible-bulk-rnaseq-prostate-cancer-hypoxia-pipeline")
 ```
 source("R/workshop_deseq_analysis.R")
