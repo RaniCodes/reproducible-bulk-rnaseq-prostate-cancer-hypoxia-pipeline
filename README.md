@@ -1,4 +1,4 @@
-# Reproducible bulk RNA‑seq pipeline for prostate cancer hypoxia
+# Bulk RNA‑seq pipeline for prostate cancer hypoxia
 December 10, 2025
 
 End‑to‑end workflow for LNCaP and PC3 cell lines (hypoxia vs normoxia):
