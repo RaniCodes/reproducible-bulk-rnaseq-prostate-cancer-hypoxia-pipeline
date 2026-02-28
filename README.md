@@ -277,5 +277,5 @@ In future, I plan to rerun the complete workflow (alignment + counting + differe
 
 ## Acknowledgement:
 
-To Smriti Arora, her workshop helped me understand the basics of Bulk RNA seq and gave me the confidence to perform hands on pipeline for this project. Reference of the tutorial, used for analysis: https://github.com/erilu/bulk-rnaseq-analysis
+To Smriti Arora, her workshop helped me understand the basics of Bulk RNA seq. Reference of the tutorial, used for analysis: https://github.com/erilu/bulk-rnaseq-analysis
 
