@@ -275,5 +275,7 @@ As a workaround, I used the tutorial count matrix (`raw_counts.csv`) instead of 
 
 In future, I plan to rerun the complete workflow (alignment + counting + differential expression) on a higher‑memory machine or in the cloud and compare the resulting differentially expressed genes with the tutorial‑based results.
 
+## Acknowledgement:
 
+To Smriti Arora, her workshop helped me understand the basics of Bulk RNA seq and gave me the confidence to perform hands on pipeline for this project. Reference of the tutorial, used for analysis: https://github.com/erilu/bulk-rnaseq-analysis
 
